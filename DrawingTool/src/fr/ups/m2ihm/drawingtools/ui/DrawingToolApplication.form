@@ -144,6 +144,8 @@
                 <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="tglOvalStateChanged"/>
               </Events>
             </Component>
+            <Component class="fr.ups.m2ihm.rangeslider.RangeSlider" name="rangeSlider1">
+            </Component>
           </SubComponents>
         </Container>
       </SubComponents>

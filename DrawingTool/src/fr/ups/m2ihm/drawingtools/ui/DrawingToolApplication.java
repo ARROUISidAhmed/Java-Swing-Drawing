@@ -105,6 +105,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         sideToolBar = new javax.swing.JPanel();
         tglLine = new javax.swing.JToggleButton();
         tglOval = new javax.swing.JToggleButton();
+        rangeSlider1 = new fr.ups.m2ihm.rangeslider.RangeSlider();
         topMenu = new javax.swing.JMenuBar();
         editMenu = new javax.swing.JMenu();
         Undo = new javax.swing.JMenuItem();
@@ -144,6 +145,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
             }
         });
         sideToolBar.add(tglOval);
+        sideToolBar.add(rangeSlider1);
 
         javax.swing.GroupLayout sideGroupLayout = new javax.swing.GroupLayout(sideGroup);
         sideGroup.setLayout(sideGroupLayout);
@@ -209,11 +211,11 @@ public class DrawingToolApplication extends javax.swing.JFrame {
     }//GEN-LAST:event_tglOvalStateChanged
 
     private void UndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UndoActionPerformed
-        // TODO add your handling code here:
+        model.getCommandManager().undo();
     }//GEN-LAST:event_UndoActionPerformed
 
     private void RedoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RedoActionPerformed
-        // TODO add your handling code here:
+        model.getCommandManager().redo();
     }//GEN-LAST:event_RedoActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -221,6 +223,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
     private javax.swing.JMenuItem Undo;
     private fr.ups.m2ihm.drawingtools.ui.DrawingZone drawingZone;
     private javax.swing.JMenu editMenu;
+    private fr.ups.m2ihm.rangeslider.RangeSlider rangeSlider1;
     private javax.swing.JPanel sideGroup;
     private javax.swing.JPanel sideToolBar;
     private javax.swing.JToggleButton tglLine;

@@ -32,6 +32,12 @@ public class DrawingModel {
      */
     private final List<DrawingView> views;
 
+    public CommandManager commandManager;
+
+    public CommandManager getCommandManager() {
+        return commandManager;
+    }
+
     /**
      * Prepare the handler of drawings. This class behaves as a model (MVC
      * convention).
@@ -39,6 +45,7 @@ public class DrawingModel {
     public DrawingModel() {
         this.shapes = new ArrayList<>(DEFAULT_SHAPE_CAPACITY);
         this.views = new ArrayList<>(DEFAULT_NUMBER_OF_VIEWS);
+        this.commandManager = new CommandManager();
     }
 
     /**
@@ -65,6 +72,17 @@ public class DrawingModel {
      * @param shape the to be added.
      */
     public final void addShape(final Shape shape) {
+        Command c = new AddShapeCommand(this, shape);
+        c.execute();
+        commandManager.registerCommand(c);
+    }
+
+    /**
+     * Really performs the adding of a shape to the scene
+     *
+     * @param shape
+     */
+    final void reallyAddShape(final Shape shape) {
         shapes.add(shape);
         fireModelChanged();
     }
@@ -75,6 +93,13 @@ public class DrawingModel {
      * @param shape the to be removed.
      */
     public final void removeShape(final Shape shape) {
+        Command c = new RemoveShapeCommand(this, shape);
+        commandManager.registerCommand(c);
+        c.execute();
+        reallyRemoveShape(shape);
+    }
+
+    final void reallyRemoveShape(final Shape shape) {
         shapes.remove(shape);
         fireModelChanged();
     }
