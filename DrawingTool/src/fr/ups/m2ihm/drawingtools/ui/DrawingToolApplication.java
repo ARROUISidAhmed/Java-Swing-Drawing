@@ -5,6 +5,7 @@
  */
 package fr.ups.m2ihm.drawingtools.ui;
 
+import fr.ups.m2ihm.drawingtools.drawingmodel.CommandManager;
 import fr.ups.m2ihm.drawingtools.drawingmodel.DrawingModel;
 import fr.ups.m2ihm.drawingtools.drawingmodel.DrawingView;
 import fr.ups.m2ihm.drawingtools.drawingmodel.Shape;
@@ -19,6 +20,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import javax.swing.JToggleButton;
@@ -89,6 +91,29 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         toolSelectors.put(ToolManager.Tool.LINE, tglLine);
         toolSelectors.put(ToolManager.Tool.CIRCLE, tglOval);
         toolSelectors.get(tool.getCurrentToolName()).setSelected(true);
+
+        configureRangeSlider();
+    }
+
+    private void configureRangeSlider() {
+        //Configure range slider
+        rangeSlider.getModel().setMaxAllowed(0);
+
+        model.getCommandManager().addPropertyChangeListener((e) -> {
+            rangeSlider.getModel().setMaxAllowed(model.getCommandManager().getAvailableUndo().size());
+        });
+
+        rangeSlider.getModel().addPropertyChangeListener((e) -> {
+            if (rangeSlider.getModel().getMaxAllowed() - rangeSlider.getModel().getMinAllowed() > 0) {
+                actionsLabel.setText("Actions from "
+                        + (int) (rangeSlider.getModel().getMinValue() + 1)
+                        + " to "
+                        + (int) (rangeSlider.getModel().getMaxValue() + 1));
+            } else {
+                actionsLabel.setText("Actions from 0 to 0");
+            }
+
+        });
     }
 
     /**
@@ -105,11 +130,13 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         sideToolBar = new javax.swing.JPanel();
         tglLine = new javax.swing.JToggleButton();
         tglOval = new javax.swing.JToggleButton();
-        rangeSlider1 = new fr.ups.m2ihm.rangeslider.RangeSlider();
+        actionsLabel = new javax.swing.JLabel();
+        rangeSlider = new fr.ups.m2ihm.rangeslider.RangeSlider();
         topMenu = new javax.swing.JMenuBar();
         editMenu = new javax.swing.JMenu();
         Undo = new javax.swing.JMenuItem();
         Redo = new javax.swing.JMenuItem();
+        UndoRange = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("The Most Useless Drawing Tool");
@@ -120,11 +147,11 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         drawingZone.setLayout(drawingZoneLayout);
         drawingZoneLayout.setHorizontalGroup(
             drawingZoneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 602, Short.MAX_VALUE)
+            .addGap(0, 923, Short.MAX_VALUE)
         );
         drawingZoneLayout.setVerticalGroup(
             drawingZoneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 545, Short.MAX_VALUE)
         );
 
         sideToolBar.setBorder(javax.swing.BorderFactory.createTitledBorder("Tool selector"));
@@ -144,16 +171,22 @@ public class DrawingToolApplication extends javax.swing.JFrame {
                 tglOvalStateChanged(evt);
             }
         });
+        tglOval.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tglOvalActionPerformed(evt);
+            }
+        });
         sideToolBar.add(tglOval);
-        sideToolBar.add(rangeSlider1);
+
+        actionsLabel.setText("Actions from 0 to 0");
+        sideToolBar.add(actionsLabel);
+        sideToolBar.add(rangeSlider);
 
         javax.swing.GroupLayout sideGroupLayout = new javax.swing.GroupLayout(sideGroup);
         sideGroup.setLayout(sideGroupLayout);
         sideGroupLayout.setHorizontalGroup(
             sideGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(sideGroupLayout.createSequentialGroup()
-                .addComponent(sideToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(sideToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         sideGroupLayout.setVerticalGroup(
             sideGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -179,6 +212,15 @@ public class DrawingToolApplication extends javax.swing.JFrame {
             }
         });
         editMenu.add(Redo);
+
+        UndoRange.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        UndoRange.setText("UndoRange");
+        UndoRange.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                UndoRangeActionPerformed(evt);
+            }
+        });
+        editMenu.add(UndoRange);
 
         topMenu.add(editMenu);
 
@@ -210,20 +252,31 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         tool.selectTool(ToolManager.Tool.CIRCLE);
     }//GEN-LAST:event_tglOvalStateChanged
 
-    private void UndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UndoActionPerformed
-        model.getCommandManager().undo();
-    }//GEN-LAST:event_UndoActionPerformed
+    private void tglOvalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tglOvalActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tglOvalActionPerformed
+
+    private void UndoRangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UndoRangeActionPerformed
+        model.getCommandManager().undoRange((int) rangeSlider.getModel().getMinValue(),
+                (int) rangeSlider.getModel().getMaxValue());
+    }//GEN-LAST:event_UndoRangeActionPerformed
 
     private void RedoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RedoActionPerformed
         model.getCommandManager().redo();
     }//GEN-LAST:event_RedoActionPerformed
 
+    private void UndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UndoActionPerformed
+        model.getCommandManager().undo();
+    }//GEN-LAST:event_UndoActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem Redo;
     private javax.swing.JMenuItem Undo;
+    private javax.swing.JMenuItem UndoRange;
+    private javax.swing.JLabel actionsLabel;
     private fr.ups.m2ihm.drawingtools.ui.DrawingZone drawingZone;
     private javax.swing.JMenu editMenu;
-    private fr.ups.m2ihm.rangeslider.RangeSlider rangeSlider1;
+    private fr.ups.m2ihm.rangeslider.RangeSlider rangeSlider;
     private javax.swing.JPanel sideGroup;
     private javax.swing.JPanel sideToolBar;
     private javax.swing.JToggleButton tglLine;

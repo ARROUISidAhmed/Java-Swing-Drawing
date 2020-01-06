@@ -32,7 +32,7 @@ public class DrawingModel {
      */
     private final List<DrawingView> views;
 
-    public CommandManager commandManager;
+    private CommandManager commandManager;
 
     public CommandManager getCommandManager() {
         return commandManager;

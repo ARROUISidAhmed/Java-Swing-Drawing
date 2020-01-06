@@ -5,6 +5,8 @@
  */
 package fr.ups.m2ihm.drawingtools.drawingmodel;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Stack;
 
 /**
@@ -15,6 +17,57 @@ public class CommandManager {
 
     private final Stack<Command> availableUndo;
     private final Stack<Command> availableRedo;
+
+    public static final String PROP_AVAILABLEUNDO = "availableUndo";
+
+    /**
+     * Get the value of availableUndo
+     *
+     * @return the value of availableUndo
+     */
+    public Stack<Command> getAvailableUndo() {
+        return availableUndo;
+    }
+
+    private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param propertyName
+     * @param listener
+     */
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param propertyName
+     * @param listener
+     */
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
+    }
 
     private enum State {
 
@@ -31,6 +84,7 @@ public class CommandManager {
     }
 
     public void registerCommand(Command c) {
+        int oldSize = availableUndo.size();
         switch (state) {
             case Idle:
                 availableUndo.push(c);
@@ -54,9 +108,68 @@ public class CommandManager {
                 state = State.UndoOnly;
                 break;
         }
+
+        propertyChangeSupport.firePropertyChange(PROP_AVAILABLEUNDO, oldSize, availableUndo.size());
+
+    }
+
+    public void undoRange(int lowerIndex, int upperIndex) {
+        int oldSize = availableUndo.size();
+        switch (state) {
+            case Idle:
+                //interdit
+                break;
+
+            case UndoOnly:
+
+                if (availableUndo.size() == (upperIndex - lowerIndex + 1)) {
+                    state = State.RedoOnly;
+                    for (int i = lowerIndex; i <= upperIndex; i++) {
+                        Command c = availableUndo.remove(lowerIndex);
+                        c.undo();
+                        availableRedo.push(c);
+                    }
+
+                } else if (availableUndo.size() > (upperIndex - lowerIndex + 1)) {
+
+                    state = State.UndoRedoable;
+                    for (int i = lowerIndex; i <= upperIndex; i++) {
+                        Command c = availableUndo.remove(lowerIndex);
+                        c.undo();
+                        availableRedo.push(c);
+                    }
+                }
+                break;
+
+            case RedoOnly:
+                //interdit
+                break;
+
+            case UndoRedoable:
+                if (availableUndo.size() == (upperIndex - lowerIndex + 1)) {
+                    state = State.RedoOnly;
+                    for (int i = lowerIndex; i <= upperIndex; i++) {
+                        Command c = availableUndo.remove(lowerIndex);
+                        c.undo();
+                        availableRedo.push(c);
+                    }
+                } else if (availableUndo.size() > (upperIndex - lowerIndex + 1)) {
+                    state = State.UndoRedoable;
+                    for (int i = lowerIndex; i <= upperIndex; i++) {
+                        Command c = availableUndo.remove(lowerIndex);
+                        c.undo();
+                        availableRedo.push(c);
+                    }
+
+                }
+
+                break;
+        }
+        propertyChangeSupport.firePropertyChange(PROP_AVAILABLEUNDO, oldSize, availableUndo.size());
     }
 
     public void undo() {
+        int oldSize = availableUndo.size();
         switch (state) {
             case Idle:
                 //interdit
@@ -85,21 +198,24 @@ public class CommandManager {
             case UndoRedoable:
                 if (availableUndo.size() == 1) {
                     state = State.RedoOnly;
-                    Command command = availableUndo.pop();
-                    command.undo();
-                    availableRedo.push(command);
+                    Command c = availableUndo.pop();
+                    c.undo();
+                    availableRedo.push(c);
                 } else if (availableUndo.size() > 1) {
                     state = State.UndoRedoable;
-                    Command command = availableUndo.pop();
-                    command.undo();
-                    availableRedo.push(command);
+                    Command c = availableUndo.pop();
+                    c.undo();
+                    availableRedo.push(c);
                 }
 
                 break;
         }
+
+        propertyChangeSupport.firePropertyChange(PROP_AVAILABLEUNDO, oldSize, availableUndo.size());
     }
 
     public void redo() {
+        int oldSize = availableUndo.size();
         switch (state) {
             case Idle:
                 //interdit
@@ -127,18 +243,21 @@ public class CommandManager {
             case UndoRedoable:
                 if (availableRedo.size() == 1) {
                     state = State.UndoOnly;
-                    Command command2 = availableRedo.pop();
-                    command2.execute();
-                    availableUndo.push(command2);
+                    Command command = availableRedo.pop();
+                    command.execute();
+                    availableUndo.push(command);
                 }
                 if (availableRedo.size() > 1) {
                     state = State.UndoRedoable;
-                    Command command2 = availableRedo.pop();
-                    command2.execute();
-                    availableUndo.push(command2);
+                    Command command = availableRedo.pop();
+                    command.execute();
+                    availableUndo.push(command);
                 }
 
                 break;
         }
+
+        propertyChangeSupport.firePropertyChange(PROP_AVAILABLEUNDO, oldSize, availableUndo.size());
     }
+
 }

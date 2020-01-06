@@ -71,6 +71,10 @@ public class RangeSlider extends JLayeredPane {
         Dragging,
     }
 
+    public RangeSliderModel getModel() {
+        return model;
+    }
+
     private class RangeMouseAdapter extends MouseAdapter {
 
         private int x0;
@@ -136,7 +140,7 @@ public class RangeSlider extends JLayeredPane {
         this.add(track, new Integer(0));
         this.add(range, new Integer(1));
         this.add(minThumb, new Integer(2));
-        this.add(maxThumb, new Integer(2));
+        this.add(maxThumb, new Integer(3));
 
         //Set graphical properties
         this.setPreferredSize(new Dimension(100, 10));
@@ -144,39 +148,31 @@ public class RangeSlider extends JLayeredPane {
         this.setAlignmentY(CENTER_ALIGNMENT);
 
         //Add views property listeners
-        minThumb.addPropertyChangeListener(Thumb.PROP_CURRENTVALUE, (PropertyChangeEvent e) -> {
-            model.setMinValue((double) e.getNewValue());
-        });
-
-        maxThumb.addPropertyChangeListener(Thumb.PROP_CURRENTVALUE, (e) -> {
-            model.setMaxValue((double) e.getNewValue());
-        });
-
-        range.addPropertyChangeListener(Range.PROP_MINVALUE, (e) -> {
-            model.setMinValue((double) e.getNewValue());
-        });
-
-        range.addPropertyChangeListener(Range.PROP_MAXVALUE, (e) -> {
-            model.setMaxValue((double) e.getNewValue());
-        });
-
         //Add model property listeners
         model.addPropertyChangeListener(RangeSliderModel.PROP_MINVALUE, (e) -> {
-            //Configure minthumb
-            minThumb.setCurrentValue((double) e.getNewValue());
             paintMinThumb();
         });
 
+        model.addPropertyChangeListener(RangeSliderModel.PROP_MAXVALUE, (e) -> {
+            paintMaxThumb();
+        });
+
+        model.addPropertyChangeListener(RangeSliderModel.PROP_MAXALLOWED, (e) -> {
+            paintMinThumb();
+            paintMaxThumb();
+            paintRange();
+        });
+
+        model.addPropertyChangeListener(RangeSliderModel.PROP_MINALLOWED, (e) -> {
+            paintMinThumb();
+            paintMaxThumb();
+            paintRange();
+        });
         model.addPropertyChangeListener(RangeSliderModel.PROP_RANGE, (e) -> {
             Pair<Double, Double> pair = (Pair) e.getNewValue();
             range.setMinValue(pair.getFirst());
             range.setMaxValue(pair.getSecond());
             paintRange();
-        });
-
-        model.addPropertyChangeListener(RangeSliderModel.PROP_MAXVALUE, (e) -> {
-            maxThumb.setCurrentValue((double) e.getNewValue());
-            paintMaxThumb();
         });
 
         //Add interaction listeners
@@ -218,12 +214,12 @@ public class RangeSlider extends JLayeredPane {
 
     private void paintMinThumb() {
         int minThumbRelativeX = mapToPosition(model.getMinValue());
-        minThumb.setBounds(minThumbRelativeX - groupHeight, groupY - groupHeight, groupHeight * 2, groupHeight * 2);
+        minThumb.setBounds(minThumbRelativeX - 2 * groupHeight / 3, groupY - groupHeight, groupHeight * 2, groupHeight * 2);
     }
 
     private void paintMaxThumb() {
         int maxThumbRelativeX = mapToPosition(model.getMaxValue());
-        maxThumb.setBounds(maxThumbRelativeX - groupHeight, groupY - groupHeight, groupHeight * 2, groupHeight * 2);
+        maxThumb.setBounds(maxThumbRelativeX - 1 * groupHeight / 3, groupY - groupHeight, groupHeight * 2, groupHeight * 2);
     }
 
     private void paintRange() {
@@ -237,13 +233,13 @@ public class RangeSlider extends JLayeredPane {
         super.setBounds(x, y, width, height);
 
         //Configure group
-        groupWidth = width;
+        groupWidth = width - 2 * groupHeight;
         groupHeight = 10;
         groupX = 0;
         groupY = height / 2;
 
         //Configure track
-        track.setBounds(groupX, groupY - (groupHeight / 2), groupWidth, groupHeight);
+        track.setBounds(groupX, groupY - (groupHeight / 2), groupWidth + 2 * groupHeight, groupHeight);
 
         //Configure thumbs
         paintMinThumb();

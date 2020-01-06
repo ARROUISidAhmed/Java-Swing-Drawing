@@ -73,7 +73,7 @@ public class RangeSliderModel {
     }
 
     public void setMinValue(double minValue) {
-        if (minValue >= minAllowed && minValue < getMaxValue()) {
+        if (minValue >= minAllowed && minValue <= getMaxValue()) {
 
             Pair<Double, Double> oldRange = this.range;
             double oldMinValue = this.range.getFirst();
@@ -101,7 +101,7 @@ public class RangeSliderModel {
      * @param maxValue new value of maxValue
      */
     public void setMaxValue(double maxValue) {
-        if (maxValue > getMinValue() && maxValue <= maxAllowed) {
+        if (maxValue >= getMinValue() && maxValue <= maxAllowed) {
 
             Pair<Double, Double> oldRange = this.range;
             double oldMaxValue = this.range.getSecond();
@@ -133,7 +133,16 @@ public class RangeSliderModel {
     public void setMinAllowed(double minAllowed) {
         double oldMinAllowed = this.minAllowed;
         this.minAllowed = minAllowed;
+
         propertyChangeSupport.firePropertyChange(PROP_MINALLOWED, oldMinAllowed, minAllowed);
+
+        if (getMaxValue() < minAllowed) {
+            setMaxValue(minAllowed);
+        }
+        if (getMinValue() < minAllowed) {
+            setMinValue(minAllowed);
+        }
+
     }
 
     private double maxAllowed;
@@ -158,7 +167,14 @@ public class RangeSliderModel {
 
         double oldMaxAllowed = this.maxAllowed;
         this.maxAllowed = maxAllowed;
+        if (getMinValue() > maxAllowed) {
+            setMinValue(maxAllowed);
+        }
+        if (getMaxValue() > maxAllowed) {
+            setMaxValue(maxAllowed);
+        }
         propertyChangeSupport.firePropertyChange(PROP_MAXALLOWED, oldMaxAllowed, maxAllowed);
+
     }
 
     private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
