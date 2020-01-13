@@ -11,22 +11,22 @@ package fr.ups.m2ihm.drawingtools.drawingmodel;
  */
 class RemoveShapeCommand implements Command {
 
-    private DrawingModel model;
-    private Shape shape;
+    private final DrawingModel drawingModel;
+    private final Shape shape;
 
-    public RemoveShapeCommand(DrawingModel aThis, Shape shape) {
-        this.model = aThis;
+    public RemoveShapeCommand(DrawingModel drawingModel, Shape shape) {
+        this.drawingModel = drawingModel;
         this.shape = shape;
     }
 
     @Override
     public void execute() {
-        model.reallyRemoveShape(shape);
+        drawingModel.reallyRemoveShape(shape);
     }
 
     @Override
     public void undo() {
-        model.reallyAddShape(shape);
+        drawingModel.reallyAddShape(shape);
     }
 
 }

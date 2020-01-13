@@ -94,9 +94,8 @@ public class DrawingModel {
      */
     public final void removeShape(final Shape shape) {
         Command c = new RemoveShapeCommand(this, shape);
-        commandManager.registerCommand(c);
         c.execute();
-        reallyRemoveShape(shape);
+        commandManager.registerCommand(c);
     }
 
     final void reallyRemoveShape(final Shape shape) {

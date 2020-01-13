@@ -5,28 +5,30 @@
  */
 package fr.ups.m2ihm.drawingtools.drawingmodel;
 
+import java.awt.Point;
+
 /**
  *
  * @author niko3
  */
 public class AddShapeCommand implements Command {
 
-    private DrawingModel model;
-    private Shape shape;
+    private final DrawingModel drawingModel;
+    private final Shape shape;
 
-    public AddShapeCommand(DrawingModel aThis, Shape shape) {
-        this.model = aThis;
+    public AddShapeCommand(DrawingModel drawingModel, Shape shape) {
+        this.drawingModel = drawingModel;
         this.shape = shape;
     }
 
     @Override
     public void execute() {
-        model.reallyAddShape(shape);
+        drawingModel.reallyAddShape(shape);
     }
 
     @Override
     public void undo() {
-        model.reallyRemoveShape(shape);
+        drawingModel.reallyRemoveShape(shape);
     }
 
 }

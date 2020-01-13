@@ -5,9 +5,12 @@
  */
 package fr.ups.m2ihm.drawingtools.ui;
 
+import fr.ups.m2ihm.drawingtools.drawingmodel.Command;
 import fr.ups.m2ihm.drawingtools.drawingmodel.CommandManager;
 import fr.ups.m2ihm.drawingtools.drawingmodel.DrawingModel;
 import fr.ups.m2ihm.drawingtools.drawingmodel.DrawingView;
+import fr.ups.m2ihm.drawingtools.drawingmodel.MacroCommand;
+import fr.ups.m2ihm.drawingtools.drawingmodel.MacroManager;
 import fr.ups.m2ihm.drawingtools.drawingmodel.Shape;
 import fr.ups.m2ihm.drawingtools.toolsmodel.AbstractTool;
 import fr.ups.m2ihm.drawingtools.toolsmodel.DrawingEvent;
@@ -21,6 +24,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.swing.JToggleButton;
@@ -71,28 +75,46 @@ public class DrawingToolApplication extends javax.swing.JFrame {
 
     private final Map<ToolManager.Tool, JToggleButton> toolSelectors;
 
+    private final MacroManager macroManager;
+
     /**
      * Creates new form DrawingToolApplication.
      */
     public DrawingToolApplication() {
+
+        macroManager = new MacroManager();
         initComponents();
         model = new DrawingModel();
         model.addView(new DrawingViewImpl());
+
         tool = new ToolManager(model);
+        configureToolManager();
+
+        configureDrawingZone();
+
+        toolSelectors = new HashMap<>(ToolManager.Tool.values().length);
+        configureToolSelector();
+
+        configureRangeSlider();
+
+    }
+
+    private void configureToolManager() {
         tool.addDrawingController(DrawingControllerImpl.getInstance());
         DrawingControllerImpl.getInstance().setTool(tool);
         tool.addDrawingToolView(new DrawingToolViewImpl());
+    }
 
+    private void configureDrawingZone() {
         drawingZone.addMouseListener(DrawingControllerImpl.getInstance());
         drawingZone.addMouseMotionListener(DrawingControllerImpl.getInstance());
         drawingZone.addKeyListener(DrawingControllerImpl.getInstance());
+    }
 
-        toolSelectors = new HashMap<>(ToolManager.Tool.values().length);
+    private void configureToolSelector() {
         toolSelectors.put(ToolManager.Tool.LINE, tglLine);
         toolSelectors.put(ToolManager.Tool.CIRCLE, tglOval);
         toolSelectors.get(tool.getCurrentToolName()).setSelected(true);
-
-        configureRangeSlider();
     }
 
     private void configureRangeSlider() {
@@ -132,11 +154,16 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         tglOval = new javax.swing.JToggleButton();
         actionsLabel = new javax.swing.JLabel();
         rangeSlider = new fr.ups.m2ihm.rangeslider.RangeSlider();
+        macroGroup = new javax.swing.JPanel();
+        macroScroll = new javax.swing.JScrollPane();
+        macroList = new javax.swing.JList<>();
         topMenu = new javax.swing.JMenuBar();
         editMenu = new javax.swing.JMenu();
         Undo = new javax.swing.JMenuItem();
         Redo = new javax.swing.JMenuItem();
         UndoRange = new javax.swing.JMenuItem();
+        RegisterMacro = new javax.swing.JMenuItem();
+        ApplyMacro = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("The Most Useless Drawing Tool");
@@ -147,11 +174,11 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         drawingZone.setLayout(drawingZoneLayout);
         drawingZoneLayout.setHorizontalGroup(
             drawingZoneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 923, Short.MAX_VALUE)
+            .addGap(0, 810, Short.MAX_VALUE)
         );
         drawingZoneLayout.setVerticalGroup(
             drawingZoneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 545, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         sideToolBar.setBorder(javax.swing.BorderFactory.createTitledBorder("Tool selector"));
@@ -190,7 +217,22 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         );
         sideGroupLayout.setVerticalGroup(
             sideGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(sideToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
+            .addComponent(sideToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 732, Short.MAX_VALUE)
+        );
+
+        macroList.setBorder(javax.swing.BorderFactory.createTitledBorder("Macros"));
+        macroList.setModel(macroManager);
+        macroScroll.setViewportView(macroList);
+
+        javax.swing.GroupLayout macroGroupLayout = new javax.swing.GroupLayout(macroGroup);
+        macroGroup.setLayout(macroGroupLayout);
+        macroGroupLayout.setHorizontalGroup(
+            macroGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(macroScroll, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        macroGroupLayout.setVerticalGroup(
+            macroGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(macroScroll, javax.swing.GroupLayout.Alignment.TRAILING)
         );
 
         editMenu.setText("Edit");
@@ -222,6 +264,24 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         });
         editMenu.add(UndoRange);
 
+        RegisterMacro.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
+        RegisterMacro.setText("RegisterMacro");
+        RegisterMacro.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RegisterMacroActionPerformed(evt);
+            }
+        });
+        editMenu.add(RegisterMacro);
+
+        ApplyMacro.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        ApplyMacro.setText("ApplyMacro");
+        ApplyMacro.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ApplyMacroActionPerformed(evt);
+            }
+        });
+        editMenu.add(ApplyMacro);
+
         topMenu.add(editMenu);
 
         setJMenuBar(topMenu);
@@ -233,12 +293,15 @@ public class DrawingToolApplication extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(sideGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(drawingZone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(drawingZone, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(macroGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(sideGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(drawingZone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(macroGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -269,13 +332,37 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         model.getCommandManager().undo();
     }//GEN-LAST:event_UndoActionPerformed
 
+    private void RegisterMacroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RegisterMacroActionPerformed
+        List<Command> commands = model
+                .getCommandManager()
+                .getAvailableUndo()
+                .subList(
+                        (int) rangeSlider.getModel().getMinValue(),
+                        (int) rangeSlider.getModel().getMaxValue());
+        macroManager.registerMacro(new MacroCommand("Macro #" + macroManager.getSize(), commands));
+    }//GEN-LAST:event_RegisterMacroActionPerformed
+
+    private void ApplyMacroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ApplyMacroActionPerformed
+        int index = macroList.getSelectedIndex();
+        if (index > -1) {
+            Command c = macroManager.getElementAt(index);
+            c.execute();
+        }
+
+    }//GEN-LAST:event_ApplyMacroActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem ApplyMacro;
     private javax.swing.JMenuItem Redo;
+    private javax.swing.JMenuItem RegisterMacro;
     private javax.swing.JMenuItem Undo;
     private javax.swing.JMenuItem UndoRange;
     private javax.swing.JLabel actionsLabel;
     private fr.ups.m2ihm.drawingtools.ui.DrawingZone drawingZone;
     private javax.swing.JMenu editMenu;
+    private javax.swing.JPanel macroGroup;
+    private javax.swing.JList<String> macroList;
+    private javax.swing.JScrollPane macroScroll;
     private fr.ups.m2ihm.rangeslider.RangeSlider rangeSlider;
     private javax.swing.JPanel sideGroup;
     private javax.swing.JPanel sideToolBar;

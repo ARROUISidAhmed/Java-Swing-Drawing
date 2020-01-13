@@ -5,6 +5,7 @@
  */
 package fr.ups.m2ihm.drawingtools.drawingmodel;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,26 +13,41 @@ import java.util.List;
  *
  * @author arrouisa
  */
-public class Macro implements Command {
+public class MacroCommand extends LocalizedCommand {
 
     private List<Command> commands;
+    private String name;
 
-    public Macro(List<Command> commands) {
+    public MacroCommand(String name, List<Command> commands) {
+        this.name = name;
         this.commands = commands;
     }
 
-    public Macro() {
-        this(new ArrayList<Command>());
+    public MacroCommand() {
+        this("Macro", new ArrayList<Command>());
     }
 
     @Override
     public void execute() {
-        commands.forEach(command -> command.execute());
+            commands.forEach((command) -> {
+                command.execute();
+            });
+
     }
 
     @Override
     public void undo() {
         commands.forEach(command -> command.undo());
+    }
+
+    @Override
+    public void setAnchorPoint(Point anchorPoint) {
+        super.setAnchorPoint(anchorPoint);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
 }
