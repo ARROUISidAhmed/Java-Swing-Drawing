@@ -8,6 +8,7 @@ package fr.ups.m2ihm.drawingtools.drawingmodel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -37,7 +38,14 @@ public class DrawingModel {
     public CommandManager getCommandManager() {
         return commandManager;
     }
+    
+    private MacroManager macroManager;
 
+    public MacroManager getMacroManager() {
+        return macroManager;
+    }
+
+    
     /**
      * Prepare the handler of drawings. This class behaves as a model (MVC
      * convention).
@@ -46,6 +54,7 @@ public class DrawingModel {
         this.shapes = new ArrayList<>(DEFAULT_SHAPE_CAPACITY);
         this.views = new ArrayList<>(DEFAULT_NUMBER_OF_VIEWS);
         this.commandManager = new CommandManager();
+        this.macroManager = new MacroManager();
     }
 
     /**
@@ -121,5 +130,17 @@ public class DrawingModel {
      */
     public final List<Shape> getShapes() {
         return Collections.unmodifiableList(shapes);
+    }
+    
+    /*
+    *
+    */
+    
+    public final void applyMacro(int index){
+        MacroCommand c = macroManager.getElementAt(index);
+        if(Objects.nonNull(c)){
+            c.execute();
+            commandManager.registerCommand(c);
+        }
     }
 }

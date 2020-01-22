@@ -14,40 +14,40 @@ import java.util.List;
  * @author arrouisa
  */
 public class MacroCommand extends LocalizedCommand {
-
+    
     private List<Command> commands;
     private String name;
-
+    
     public MacroCommand(String name, List<Command> commands) {
         this.name = name;
-        this.commands = commands;
+        this.commands = new ArrayList<>(commands);
     }
-
+    
     public MacroCommand() {
         this("Macro", new ArrayList<Command>());
     }
-
+    
     @Override
     public void execute() {
-            commands.forEach((command) -> {
-                command.execute();
-            });
-
+        commands.forEach((command) -> {
+            command.execute();
+        });
+        
     }
-
+    
     @Override
     public void undo() {
         commands.forEach(command -> command.undo());
     }
-
+    
     @Override
     public void setAnchorPoint(Point anchorPoint) {
         super.setAnchorPoint(anchorPoint);
     }
-
+    
     @Override
     public String toString() {
         return name;
     }
-
+    
 }

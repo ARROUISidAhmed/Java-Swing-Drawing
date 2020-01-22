@@ -72,59 +72,57 @@ public class DrawingToolApplication extends javax.swing.JFrame {
                     BasicStroke.JOIN_MITER,
                     10.0f,
                     new float[]{10.0f, 3.0f}, 0.0f);
-
+    
     private final Map<ToolManager.Tool, JToggleButton> toolSelectors;
-
-    private final MacroManager macroManager;
 
     /**
      * Creates new form DrawingToolApplication.
      */
     public DrawingToolApplication() {
-
-        macroManager = new MacroManager();
-        initComponents();
+        
         model = new DrawingModel();
+        initComponents();
         model.addView(new DrawingViewImpl());
-
+        
         tool = new ToolManager(model);
         configureToolManager();
-
+        
         configureDrawingZone();
-
+        
         toolSelectors = new HashMap<>(ToolManager.Tool.values().length);
         configureToolSelector();
-
+        
         configureRangeSlider();
-
+        
+        
     }
-
+    
     private void configureToolManager() {
         tool.addDrawingController(DrawingControllerImpl.getInstance());
         DrawingControllerImpl.getInstance().setTool(tool);
         tool.addDrawingToolView(new DrawingToolViewImpl());
     }
-
+    
     private void configureDrawingZone() {
         drawingZone.addMouseListener(DrawingControllerImpl.getInstance());
         drawingZone.addMouseMotionListener(DrawingControllerImpl.getInstance());
         drawingZone.addKeyListener(DrawingControllerImpl.getInstance());
     }
-
+    
     private void configureToolSelector() {
         toolSelectors.put(ToolManager.Tool.LINE, tglLine);
         toolSelectors.put(ToolManager.Tool.CIRCLE, tglOval);
         toolSelectors.get(tool.getCurrentToolName()).setSelected(true);
     }
-
+    
     private void configureRangeSlider() {
         //Configure range slider
         rangeSlider.getModel().setMaxAllowed(0);
-
+        
         model.getCommandManager().addPropertyChangeListener((e) -> {
             rangeSlider.getModel().setMaxAllowed(model.getCommandManager().getAvailableUndo().size());
         });
-
+        
         rangeSlider.getModel().addPropertyChangeListener((e) -> {
             if (rangeSlider.getModel().getMaxAllowed() - rangeSlider.getModel().getMinAllowed() > 0) {
                 actionsLabel.setText("Actions from "
@@ -134,7 +132,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
             } else {
                 actionsLabel.setText("Actions from 0 to 0");
             }
-
+            
         });
     }
 
@@ -221,7 +219,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         );
 
         macroList.setBorder(javax.swing.BorderFactory.createTitledBorder("Macros"));
-        macroList.setModel(macroManager);
+        macroList.setModel(model.getMacroManager());
         macroScroll.setViewportView(macroList);
 
         javax.swing.GroupLayout macroGroupLayout = new javax.swing.GroupLayout(macroGroup);
@@ -338,15 +336,14 @@ public class DrawingToolApplication extends javax.swing.JFrame {
                 .getAvailableUndo()
                 .subList(
                         (int) rangeSlider.getModel().getMinValue(),
-                        (int) rangeSlider.getModel().getMaxValue());
-        macroManager.registerMacro(new MacroCommand("Macro #" + macroManager.getSize(), commands));
+                        (int) rangeSlider.getModel().getMaxValue() + 1);
+        model.getMacroManager().registerMacro(new MacroCommand("Macro #" + model.getMacroManager().getSize(), commands));
     }//GEN-LAST:event_RegisterMacroActionPerformed
 
     private void ApplyMacroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ApplyMacroActionPerformed
         int index = macroList.getSelectedIndex();
         if (index > -1) {
-            Command c = macroManager.getElementAt(index);
-            c.execute();
+            model.applyMacro(index);
         }
 
     }//GEN-LAST:event_ApplyMacroActionPerformed
@@ -392,7 +389,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
          * The tool controlled by the DrawingController instance.
          */
         private AbstractTool tool;
-
+        
         static {
             DEFAULT_INSTANCE = new DrawingControllerImpl();
         }
@@ -435,7 +432,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
         public static DrawingControllerImpl getInstance() {
             return DEFAULT_INSTANCE;
         }
-
+        
         @Override
         public void mouseReleased(final MouseEvent e) {
             if (tool.isEventEnabled(DrawingEvent.BEGIN_DRAW)) {
@@ -444,14 +441,14 @@ public class DrawingToolApplication extends javax.swing.JFrame {
                 tool.acceptEvent(DrawingEvent.END_DRAW, e.getPoint());
             }
         }
-
+        
         @Override
         public void mouseMoved(final MouseEvent e) {
             if (tool.isEventEnabled(DrawingEvent.DRAW)) {
                 tool.acceptEvent(DrawingEvent.DRAW, e.getPoint());
             }
         }
-
+        
         @Override
         public void keyTyped(final KeyEvent e) {
             if (Objects.equals(KeyEvent.VK_CANCEL, e)) {
@@ -461,17 +458,17 @@ public class DrawingToolApplication extends javax.swing.JFrame {
                 }
             }
         }
-
+        
         @Override
         public void keyPressed(final KeyEvent e) {
             //Do nothing.
         }
-
+        
         @Override
         public void keyReleased(final KeyEvent e) {
             //Do nothing.
         }
-
+        
         @Override
         public void eventEnablingChanged(
                 final DrawingEvent event,
@@ -484,7 +481,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
      * Default implementation of the interface DrawingView.
      */
     private final class DrawingViewImpl implements DrawingView {
-
+        
         @Override
         public void modelChanged(final DrawingModel aModel) {
             drawingZone.clearAll();
@@ -506,7 +503,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
          * Stores the current ghost to allow its modification or removal.
          */
         private Shape currentGhostShape = null;
-
+        
         @Override
         public void ghostCreated(final Shape shape) {
             assert (Objects.nonNull(shape));
@@ -521,7 +518,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
                     DEFAULT_GHOST_COLOR,
                     DEFAULT_GHOST_STROKE);
         }
-
+        
         @Override
         public void ghostChanged(final Shape shape) {
             assert (Objects.nonNull(shape));
@@ -535,7 +532,7 @@ public class DrawingToolApplication extends javax.swing.JFrame {
                     DEFAULT_GHOST_COLOR,
                     DEFAULT_GHOST_STROKE);
         }
-
+        
         @Override
         public void ghostRemoved(final Shape shape) {
             if (Objects.nonNull(currentGhostShape)) {
