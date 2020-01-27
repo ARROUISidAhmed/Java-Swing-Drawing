@@ -6,6 +6,7 @@
 package fr.ups.m2ihm.drawingtools.ui.drawingshapeimpl;
 
 import fr.ups.m2ihm.drawingtools.drawingmodel.Line;
+import fr.ups.m2ihm.drawingtools.drawingmodel.MacroShape;
 import fr.ups.m2ihm.drawingtools.drawingmodel.Oval;
 import fr.ups.m2ihm.drawingtools.drawingmodel.Shape;
 import fr.ups.m2ihm.drawingtools.drawingmodel.visitor.ShapeVisitor;
@@ -96,6 +97,14 @@ public final class DrawingShapeBuilder implements ShapeVisitor {
         temporaryCreatedDrawingShape = new DrawingOval(
                 oval,
                 temporaryCreatedDrawingShapeColor,
+                temporaryCreatedDrawingShapeStroke);
+    }
+
+    @Override
+    public void visit(final MacroShape macroShape) {
+        temporaryCreatedDrawingShape = new DrawingMacroShape(
+                macroShape, 
+                temporaryCreatedDrawingShapeColor, 
                 temporaryCreatedDrawingShapeStroke);
     }
 }

@@ -11,13 +11,13 @@ import java.util.Stack;
 
 /**
  *
- * @author niko3
+ * @author Arroui Sid Ahmed
  */
 public class CommandManager {
 
     private final Stack<Command> availableUndo;
     private final Stack<Command> availableRedo;
-    
+
     public static final String PROP_AVAILABLEUNDO = "availableUndo";
 
     /**

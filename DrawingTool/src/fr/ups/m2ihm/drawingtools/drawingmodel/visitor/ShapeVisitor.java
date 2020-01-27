@@ -6,6 +6,7 @@
 package fr.ups.m2ihm.drawingtools.drawingmodel.visitor;
 
 import fr.ups.m2ihm.drawingtools.drawingmodel.Line;
+import fr.ups.m2ihm.drawingtools.drawingmodel.MacroShape;
 import fr.ups.m2ihm.drawingtools.drawingmodel.Oval;
 
 /**
@@ -27,4 +28,12 @@ public interface ShapeVisitor {
      * @param oval the oval to visit.
      */
     void visit(final Oval oval);
+    
+    
+    /**
+     * Provides the visitor to the shape. The then calls back the visitor.
+     *
+     * @param macroShape the MacroShape to visit.
+     */
+    void visit(final MacroShape macroShape);
 }

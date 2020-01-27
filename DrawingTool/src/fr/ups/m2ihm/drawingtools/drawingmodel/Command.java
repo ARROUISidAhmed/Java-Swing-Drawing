@@ -8,7 +8,7 @@ package fr.ups.m2ihm.drawingtools.drawingmodel;
 
 /**
  *
- * @author Nicolas Broders
+ * @author Arroui Sid Ahmed
  */
 public interface Command {
     

@@ -8,9 +8,12 @@ package fr.ups.m2ihm.drawingtools.toolsmodel;
 import fr.ups.m2ihm.drawingtools.drawingmodel.DrawingModel;
 import fr.ups.m2ihm.drawingtools.drawingmodel.Shape;
 import fr.ups.m2ihm.drawingtools.toolsmodel.toolimpl.LineTool;
+import fr.ups.m2ihm.drawingtools.toolsmodel.toolimpl.MacroTool;
 import fr.ups.m2ihm.drawingtools.toolsmodel.toolimpl.OvalTool;
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -27,35 +30,36 @@ public class ToolManager extends AbstractTool {
      */
     public ToolManager(final DrawingModel aModel) {
         super(aModel);
-
+        
         tools = new HashMap<>(Tool.values().length);
         tools.put(Tool.LINE, new LineTool(aModel));
         tools.put(Tool.CIRCLE, new OvalTool(aModel));
+        tools.put(Tool.MACRO, new MacroTool(aModel, new ArrayList<>()));
         goToInitialState();
     }
-
+    
     @Override
     public final Boolean isEventEnabled(final DrawingEvent event) {
         return getCurrentTool().isEventEnabled(event);
     }
-
+    
     @Override
     public final void goToInitialState() {
         selectTool(Tool.LINE);
     }
-
+    
     @Override
     public final void acceptEvent(final DrawingEvent theEvent,
             final Point aPoint) {
         getCurrentTool().acceptEvent(theEvent, aPoint);
     }
-
+    
     @Override
     protected final Shape getGhost() {
         throw new UnsupportedOperationException(
                 "This method is not used by class " + ToolManager.class);
     }
-
+    
     @Override
     protected final Shape getShape() {
         throw new UnsupportedOperationException(
@@ -73,7 +77,11 @@ public class ToolManager extends AbstractTool {
         /**
          * Targeted tool is LineTool.
          */
-        CIRCLE
+        CIRCLE,
+        /**
+         * Targeted tool is MacroTool
+         */
+        MACRO
     }
 
     /**
@@ -114,7 +122,7 @@ public class ToolManager extends AbstractTool {
         currentTool = aTool;
         getCurrentTool().goToInitialState();
     }
-
+    
     @Override
     public final void removeDrawingToolView(
             final DrawingToolView view) {
@@ -122,7 +130,7 @@ public class ToolManager extends AbstractTool {
             tools.get(tool).removeDrawingToolView(view);
         }
     }
-
+    
     @Override
     public final void addDrawingToolView(
             final DrawingToolView view) {
@@ -130,7 +138,7 @@ public class ToolManager extends AbstractTool {
             tools.get(tool).addDrawingToolView(view);
         }
     }
-
+    
     @Override
     public final void removeDrawingController(
             final DrawingController controller) {
@@ -138,7 +146,7 @@ public class ToolManager extends AbstractTool {
             tools.get(tool).removeDrawingController(controller);
         }
     }
-
+    
     @Override
     public final void addDrawingController(
             final DrawingController controller) {
@@ -146,5 +154,9 @@ public class ToolManager extends AbstractTool {
             tools.get(tool).addDrawingController(controller);
         }
     }
-
+    
+    public final void setMacro(List<Shape> shapes) {
+        MacroTool macroTool = (MacroTool) tools.get(Tool.MACRO);
+        macroTool.setShapes(shapes);
+    }
 }

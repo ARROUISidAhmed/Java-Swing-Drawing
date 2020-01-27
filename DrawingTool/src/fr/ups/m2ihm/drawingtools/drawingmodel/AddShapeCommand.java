@@ -5,13 +5,11 @@
  */
 package fr.ups.m2ihm.drawingtools.drawingmodel;
 
-import java.awt.Point;
-
 /**
  *
- * @author niko3
+ * @author Arroui Sid Ahmed
  */
-public class AddShapeCommand implements Command {
+public class AddShapeCommand implements ShapeCommand {
 
     private final DrawingModel drawingModel;
     private final Shape shape;
@@ -29,6 +27,11 @@ public class AddShapeCommand implements Command {
     @Override
     public void undo() {
         drawingModel.reallyRemoveShape(shape);
+    }
+
+    @Override
+    public Shape getShape() {
+        return shape;
     }
 
 }

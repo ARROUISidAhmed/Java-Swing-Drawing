@@ -8,7 +8,6 @@ package fr.ups.m2ihm.drawingtools.drawingmodel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -33,19 +32,12 @@ public class DrawingModel {
      */
     private final List<DrawingView> views;
 
-    private CommandManager commandManager;
+    private final CommandManager commandManager;
 
     public CommandManager getCommandManager() {
         return commandManager;
     }
-    
-    private MacroManager macroManager;
 
-    public MacroManager getMacroManager() {
-        return macroManager;
-    }
-
-    
     /**
      * Prepare the handler of drawings. This class behaves as a model (MVC
      * convention).
@@ -54,7 +46,6 @@ public class DrawingModel {
         this.shapes = new ArrayList<>(DEFAULT_SHAPE_CAPACITY);
         this.views = new ArrayList<>(DEFAULT_NUMBER_OF_VIEWS);
         this.commandManager = new CommandManager();
-        this.macroManager = new MacroManager();
     }
 
     /**
@@ -96,17 +87,6 @@ public class DrawingModel {
         fireModelChanged();
     }
 
-    /**
-     * Remove a shape to the scene.
-     *
-     * @param shape the to be removed.
-     */
-    public final void removeShape(final Shape shape) {
-        Command c = new RemoveShapeCommand(this, shape);
-        c.execute();
-        commandManager.registerCommand(c);
-    }
-
     final void reallyRemoveShape(final Shape shape) {
         shapes.remove(shape);
         fireModelChanged();
@@ -130,17 +110,5 @@ public class DrawingModel {
      */
     public final List<Shape> getShapes() {
         return Collections.unmodifiableList(shapes);
-    }
-    
-    /*
-    *
-    */
-    
-    public final void applyMacro(int index){
-        MacroCommand c = macroManager.getElementAt(index);
-        if(Objects.nonNull(c)){
-            c.execute();
-            commandManager.registerCommand(c);
-        }
     }
 }
