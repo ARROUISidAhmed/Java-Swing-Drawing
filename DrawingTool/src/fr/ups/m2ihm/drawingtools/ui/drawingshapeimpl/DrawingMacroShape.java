@@ -43,23 +43,29 @@ public class DrawingMacroShape extends DrawingShape {
         g.setColor(getColorAttribute());
         g.setStroke(getStrokeAttribute());
         final MacroShape macroShape = (MacroShape) getShape();
-        final Rectangle r = macroShape.getBoundingBox();
+
+        int xmin = macroShape.getMin().x;
+        int ymin = macroShape.getMin().y;
+
+        int xmax = macroShape.getMax().x;
+        int ymax = macroShape.getMax().y;
+
+        Rectangle r = new Rectangle(macroShape.getBoundingBox().x, macroShape.getBoundingBox().y, ymax - ymin, xmax - xmin);
 
         macroShape.getShapes().forEach((Shape _item) -> {
             if (_item.getClass().equals(Oval.class)) {
                 Oval oval = (Oval) _item;
-                int x = oval.getBoundingBox().x;
-                int y = oval.getBoundingBox().y;
-
-                g.drawOval(r.x + x, r.y + y, oval.getBoundingBox().width, oval.getBoundingBox().height);
+                int x = oval.getBoundingBox().x + r.x - xmin;
+                int y = oval.getBoundingBox().y + r.y - ymin;
+                g.drawOval(x, y, oval.getBoundingBox().width, oval.getBoundingBox().height);
             }
             if (_item.getClass().equals(Line.class)) {
                 Line line = (Line) _item;
-                final int x0 = line.getP1().x;
-                final int y0 = line.getP1().y;
-                final int x1 = line.getP2().x;
-                final int y1 = line.getP2().y;
-                g.drawLine(r.x + x0, r.y + y0, r.x + x1, r.y + y1);
+                int x0 = line.getP1().x + r.x - xmin;
+                int y0 = line.getP1().y + r.y - ymin;
+                int x1 = line.getP2().x + r.x - xmin;
+                int y1 = line.getP2().y + r.y - ymin;
+                g.drawLine(x0, y0, x1, y1);
             }
         });
 
